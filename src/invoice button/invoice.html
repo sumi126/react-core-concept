@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Invoice Generator</title>
+</head>
+<body>
+    <h1>Dynamic Invoice Generator</h1>
+    
+    <form id="invoiceForm">
+        <h3>Company Details</h3>
+        <label>Company Name: <input type="text" id="companyName" value="ABC Corp"></label><br>
+        <label>Address: <input type="text" id="companyAddress" value="123 Main St, City, Country"></label><br>
+        <label>Email: <input type="email" id="companyEmail" value="info@abccorp.com"></label><br>
+        
+        <h3>Customer Details</h3>
+        <label>Customer Name: <input type="text" id="customerName" value="John Doe"></label><br>
+        <label>Customer Address: <input type="text" id="customerAddress" value="456 Market St, City, Country"></label><br>
+        
+        <h3>Items</h3>
+        <div id="items">
+            <div class="item">
+                <label>Description: <input type="text" class="description" value="Item 1"></label>
+                <label>Quantity: <input type="number" class="quantity" value="2"></label>
+                <label>Price: <input type="number" class="price" value="50"></label><br>
+            </div>
+            <div class="item">
+                <label>Description: <input type="text" class="description" value="Item 2"></label>
+                <label>Quantity: <input type="number" class="quantity" value="1"></label>
+                <label>Price: <input type="number" class="price" value="200"></label><br>
+            </div>
+        </div>
+        
+        <button type="button" onclick="addItem()">Add Another Item</button><br><br>
+
+        <button type="button" onclick="generateInvoice()">Download Invoice</button>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        function addItem() {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'item';
+            itemDiv.innerHTML = `
+                <label>Description: <input type="text" class="description" value="New Item"></label>
+                <label>Quantity: <input type="number" class="quantity" value="1"></label>
+                <label>Price: <input type="number" class="price" value="0"></label><br>
+            `;
+            document.getElementById('items').appendChild(itemDiv);
+        }
+
+        function generateInvoice() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Get values from the form
+            const companyName = document.getElementById('companyName').value;
+            const companyAddress = document.getElementById('companyAddress').value;
+            const companyEmail = document.getElementById('companyEmail').value;
+            const customerName = document.getElementById('customerName').value;
+            const customerAddress = document.getElementById('customerAddress').value;
+
+            // Add static text
+            doc.setFontSize(22);
+            doc.text('Invoice', 20, 20);
+
+            // Add company details
+            doc.setFontSize(12);
+            doc.text(`Company Name: ${companyName}`, 20, 30);
+            doc.text(`Address: ${companyAddress}`, 20, 35);
+            doc.text(`Email: ${companyEmail}`, 20, 40);
+
+            // Add customer details
+            doc.text(`Customer Name: ${customerName}`, 20, 50);
+            doc.text(`Customer Address: ${customerAddress}`, 20, 55);
+
+            // Invoice details
+            doc.text(`Invoice Number: ${Math.floor(Math.random() * 10000)}`, 20, 65);
+            doc.text(`Date: ${new Date().toISOString().split('T')[0]}`, 20, 70);
+
+            // Line separator
+            doc.line(20, 75, 190, 75);
+
+            // Item list headers
+            doc.text('Description', 20, 85);
+            doc.text('Quantity', 100, 85);
+            doc.text('Price', 140, 85);
+            doc.text('Total', 180, 85);
+
+            // Retrieve all items from the form
+            let totalAmount = 0;
+            const items = document.querySelectorAll('.item');
+            let yOffset = 95;
+
+            items.forEach(item => {
+                const description = item.querySelector('.description').value;
+                const quantity = parseFloat(item.querySelector('.quantity').value);
+                const price = parseFloat(item.querySelector('.price').value);
+                const total = quantity * price;
+
+                // Add item to the PDF
+                doc.text(description, 20, yOffset);
+                doc.text(quantity.toString(), 100, yOffset);
+                doc.text(`$${price.toFixed(2)}`, 140, yOffset);
+                doc.text(`$${total.toFixed(2)}`, 180, yOffset);
+
+                yOffset += 10;
+                totalAmount += total;
+            });
+
+            // Add a line
+            doc.line(20, yOffset, 190, yOffset);
+            yOffset += 10;
+
+            // Add total amount
+            doc.text(`Total Amount: $${totalAmount.toFixed(2)}`, 140, yOffset);
+
+            // Save the PDF
+            doc.save('dynamic_invoice.pdf');
+        }
+    </script>
+</body>
+</html>
