@@ -17,3 +17,12 @@
 .product-detail{
     align-items: center;
 }
+
+.main-button{
+    background-color: goldenrod;
+    width: 150px;
+    height: 30px;
+    border: 1px solid darkgray;
+    border-radius: 5px;
+    cursor: pointer;
+}
